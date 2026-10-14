@@ -1,0 +1,5 @@
+[
+  { "source_id": "PHONE-GATE", "source_type": "runtime_stream", "location": "College Main Gate", "uri": "phone://PHONE-GATE", "enabled": true },
+  { "source_id": "VIDEO-HOSTEL", "source_type": "uploaded_video", "location": "Hostel Block A", "uri": "/app/videos/hostel.mp4", "enabled": false },
+  { "source_id": "CCTV-CORRIDOR", "source_type": "rtsp", "location": "Corridor", "uri": "rtsp://user:pass@192.168.1.50:554/stream1", "enabled": false }
+]
