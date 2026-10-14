@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: cg-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # One explicit value keeps the API and browser bundle in sync. This key
+      # is still public in the browser; use a server-side auth design for production.
+      API_KEY: ${API_KEY:?Set API_KEY in the project-root .env file}
+    volumes:
+      - ./backend/data:/app/data
+      - ./backend/snapshots:/app/snapshots
+      # Optional: create backend/sources.json (see sources.example.json) to
+      # declare multiple cameras/videos. Omit this mount and the app falls
+      # back to a single CAMERA_SOURCE-based source.
+      - ./backend/sources.json:/app/sources.json:ro
+      # Cache downloaded YOLO weights across container rebuilds so you're
+      # not re-pulling them from the internet every time.
+      - yolo-cache:/root/.cache
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+        VITE_WS_URL: ws://localhost:8000/ws/live
+        VITE_API_KEY: ${API_KEY:?Set API_KEY in the project-root .env file}
+    container_name: cg-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  yolo-cache:

@@ -4,3 +4,7 @@ dist/
 .env.*
 .DS_Store
 .vite/
+**/.DS_Store
+.venv/
+backend/venv/
+frontend/node_modules/
