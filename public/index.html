@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Guardian</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar" aria-hidden="true">
+    <div class="sidebar-top">
+      <a class="brand" href="#dashboard" data-page="dashboard">
+        <span class="brand-icon">CG</span>
+        <span><strong>CAMPUS GUARDIAN</strong><small>Campus safety monitoring</small></span>
+      </a>
+      <button class="icon-button sidebar-close" id="close-sidebar" aria-label="Close navigation">×</button>
+    </div>
+    <p class="nav-heading">MENU</p>
+    <nav class="navigation" aria-label="Main navigation">
+      <button class="nav-item active" data-page="dashboard"><span class="nav-icon">▦</span> Dashboard</button>
+      <button class="nav-item" data-page="cameras"><span class="nav-icon">▣</span> Cameras</button>
+      <button class="nav-item" data-page="history"><span class="nav-icon">◷</span> History <span id="history-count" class="nav-count" hidden>0</span></button>
+      <button class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> Settings</button>
+    </nav>
+    <div class="sidebar-bottom"><span class="status-dot amber"></span><span>Frontend demo · backend not connected</span></div>
+  </aside>
+  <button id="sidebar-backdrop" class="sidebar-backdrop" aria-label="Close navigation" hidden></button>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">
+        <button class="menu-button" id="open-sidebar" aria-label="Open navigation"><span></span><span></span><span></span></button>
+        <div><p class="eyebrow">CAMPUS GUARDIAN</p><h1 id="page-title">Dashboard</h1><p class="subtitle" id="page-subtitle">Four monitoring points in one view.</p></div>
+      </div>
+      <div class="topbar-right"><time id="clock">--:--:--</time></div>
+    </header>
+
+    <section class="page-view" id="page-dashboard">
+      <div class="dashboard-toolbar"><div><h2>Camera overview</h2><p>Select a screen to open its full view.</p></div><span class="small-status"><span class="status-dot amber"></span></span></div>
+      <div class="camera-grid" id="dashboard-cameras"></div>
+    </section>
+
+    <section class="page-view" id="page-cameras" hidden>
+      <div class="section-heading"><p class="eyebrow">DEVICE MANAGEMENT</p><h2>Camera setup</h2><p>Give each monitoring point a clear name. Live feeds can be connected later.</p></div>
+      <div class="camera-management" id="camera-management"></div>
+      <div class="panel add-camera-panel"><div><h3>Camera source</h3><p>Choose a source label for the selected camera. This is a frontend setting only until backend integration is added.</p></div>
+        <form id="camera-form" class="camera-form">
+          <label>Camera slot<select id="camera-select"><option value="0">Screen 1 — Main Gate</option><option value="1">Screen 2 — Campus Premises</option><option value="2">Screen 3 — Gate 2</option><option value="3">Screen 4 — Parking Area</option></select></label>
+          <label>Camera name<input id="camera-name-input" maxlength="36" placeholder="e.g. Library Entrance" required></label>
+          <label>Source note<input id="camera-source-input" maxlength="80" placeholder="e.g. USB webcam / IP camera address"></label>
+          <button class="button primary" type="submit">Save camera details</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="page-view" id="page-history" hidden>
+      <div class="section-heading"><p class="eyebrow">SAVED INCIDENTS</p><h2>Incident history</h2><p>Each camera keeps its own incident list and snapshots.</p></div>
+      <div class="history-tabs" id="history-tabs" role="tablist" aria-label="Camera history"></div>
+      <div class="history-camera-heading"><div><h3 id="history-camera-name">Main Gate</h3><p id="history-camera-count">0 incidents saved</p></div><button class="button secondary" id="history-view-snapshots">View snapshots</button></div>
+      <div class="record-list" id="history-list"></div>
+      <div class="snapshot-section" id="snapshot-section" hidden><h3>Saved snapshots</h3><div class="evidence-grid" id="history-snapshots"></div></div>
+    </section>
+
+    <section class="page-view" id="page-settings" hidden>
+      <div class="section-heading"><p class="eyebrow">PREFERENCES</p><h2>Settings</h2><p>Choose how the dashboard behaves during the demo.</p></div>
+      <div class="panel settings-panel">
+        <div class="setting-row"><div><strong>Appearance</strong><p>Switch between light and dark mode.</p></div><button id="themeToggle" class="button secondary" type="button"><span id="theme-icon">☾</span><span id="theme-label">Use light mode</span></button></div>
+        <div class="setting-row"><div><strong>Alert sound</strong><p>Play a short beep when a new alert is displayed.</p></div><label class="switch"><input type="checkbox" id="sound-toggle"><span class="slider"></span></label></div>
+        <div class="setting-row"><div><strong>Clear alert panel after five seconds</strong><p>Only closes the active alert view. Saved incidents stay in history.</p></div><label class="switch"><input type="checkbox" id="autoclear-toggle" checked><span class="slider"></span></label></div>
+        <div class="setting-row"><div><strong>Demo alert button</strong><p>Choose a camera and test the alert drawer before backend integration.</p></div><div class="demo-alert-controls"><select id="demo-camera-select" aria-label="Choose camera for demo alert"><option value="0">Main Gate</option><option value="1">Campus Premises</option><option value="2">Gate 2</option><option value="3">Parking Area</option></select><button id="test-alert-btn" class="button primary" type="button">Trigger demo alert</button></div></div>
+        <div class="setting-row"><div><strong>Saved demo data</strong><p>Incident records and camera names are stored in this browser on this device.</p></div><button id="clear-demo-data" class="button danger-outline" type="button">Clear saved data</button></div>
+      </div>
+      <p class="settings-footnote">Note: this frontend preview does not detect violence by itself. Automatic alerts will work after the Python detector is connected.</p>
+    </section>
+    <footer class="footer"><span>Campus Guardian</span><span>Frontend prototype · local demo data</span></footer>
+  </main>
+
+  <section class="camera-modal" id="camera-modal" role="dialog" aria-modal="true" aria-labelledby="modal-camera-name" hidden>
+    <div class="camera-modal-header"><div><p class="eyebrow">CAMERA FULL VIEW</p><h2 id="modal-camera-name">Main Gate</h2><p id="modal-camera-status">Not connected</p></div><div class="modal-header-actions"><button id="modal-history-btn" class="button secondary">View history</button><button id="close-camera-modal" class="icon-button" aria-label="Close camera view">×</button></div></div>
+    <div class="modal-feed" id="modal-feed"><div class="feed-placeholder"><span class="camera-symbol">▣</span><strong>Camera feed not connected</strong><span>This screen is ready for the live feed integration.</span></div><span class="feed-label" id="modal-feed-label">SCREEN 1</span><time class="feed-time" id="modal-feed-time">--:--:--</time><div class="last-detected" id="modal-last-detected">Last detected: No incidents yet</div></div>
+    <div class="modal-bottom"><span id="modal-source-note">Source not configured</span><button class="button secondary" id="modal-back-dashboard">Back to dashboard</button></div>
+  </section>
+
+  <button id="drawer-backdrop" class="drawer-backdrop" aria-label="Close alert panel" hidden></button>
+  <aside id="alert-drawer" class="alert-drawer" aria-label="Incident details" aria-hidden="true">
+    <div class="drawer-header"><div><p class="eyebrow" id="drawer-kicker">INCIDENT NOTIFICATION</p><h2 id="drawer-title">Alert details</h2></div><button id="close-drawer" class="icon-button" aria-label="Close panel">×</button></div>
+    <div id="drawer-empty" class="drawer-empty"><span class="success-icon">✓</span><h3>No active incident</h3><p>New incident alerts will appear here.</p></div>
+    <div id="drawer-incident" hidden>
+      <div class="alert-banner"><span class="alert-symbol">!</span><div><strong id="drawer-alert-heading">SUSPICIOUS ACTIVITY DETECTED</strong><p id="drawer-message">Potential violent movement detected.</p></div></div>
+      <div class="drawer-badges"><span id="drawer-severity" class="severity-pill">NEEDS REVIEW</span><span id="drawer-camera-pill" class="camera-pill">MAIN GATE</span></div>
+      <div class="detail-list"><div><span>Incident ID</span><strong id="drawer-id">—</strong></div><div><span>Detected at</span><strong id="drawer-time">—</strong></div><div><span>People detected</span><strong id="drawer-people">Not provided</strong></div></div>
+      <div class="drawer-evidence"><div class="evidence-heading"><h3>Incident snapshot</h3><span>Saved evidence</span></div><div id="drawer-snapshot" class="drawer-snapshot">Snapshot not attached in this demo</div><button id="view-snapshot-btn" class="text-button" type="button">Open snapshot ↗</button></div>
+      <p class="drawer-note">Closing this panel does not remove the incident from history.</p>
+      <div class="drawer-actions"><button id="view-incident-btn" class="button primary full-button">View camera history</button><button id="acknowledge-btn" class="button secondary full-button">Mark as reviewed</button></div>
+    </div>
+  </aside>
+  <div id="snapshot-modal" class="snapshot-modal" role="dialog" aria-modal="true" aria-label="Incident snapshot" hidden><div class="snapshot-modal-card"><div class="snapshot-modal-head"><div><p class="eyebrow">SAVED EVIDENCE</p><h2 id="snapshot-modal-title">Incident snapshot</h2></div><button id="close-snapshot-modal" class="icon-button" aria-label="Close snapshot">×</button></div><div id="snapshot-modal-content" class="snapshot-modal-content"></div></div></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="index.js"></script>
+</body>
+</html>
