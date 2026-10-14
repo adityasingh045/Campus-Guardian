@@ -1,0 +1,16 @@
+[
+  {
+    "source_id": "PHONE-001",
+    "source_type": "phone",
+    "location": "College Main Gate",
+    "uri": "",
+    "enabled": true
+  },
+  {
+    "source_id": "PHONE-002",
+    "source_type": "phone",
+    "location": "College Corridor",
+    "uri": "",
+    "enabled": true
+  }
+]
