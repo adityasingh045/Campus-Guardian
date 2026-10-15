@@ -19,6 +19,31 @@ export default function IncidentCard({ incident }) {
   const [expanded, setExpanded] = useState(false)
   const [snapshotUrl, setSnapshotUrl] = useState(null)
   const [snapshotError, setSnapshotError] = useState(false)
+  const [clipUrl, setClipUrl] = useState(null)
+  const [clipState, setClipState] = useState('idle') // idle | loading | ready | missing | error
+
+  useEffect(() => () => { if (clipUrl) URL.revokeObjectURL(clipUrl) }, [clipUrl])
+
+  async function loadClip() {
+    setClipState('loading')
+    try {
+      const blob = await api.getIncidentClip(incident.incident_id)
+      setClipUrl(URL.createObjectURL(blob))
+      setClipState('ready')
+    } catch (error) {
+      setClipState(error.status === 404 ? 'missing' : 'error')
+    }
+  }
+
+  function downloadClip() {
+    if (!clipUrl) return
+    const a = document.createElement('a')
+    a.href = clipUrl
+    a.download = `${incident.incident_id}_evidence.mp4`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+  }
 
   useEffect(() => {
     if (!expanded || !incident.incident_id || !incident.has_snapshot) return undefined
@@ -74,6 +99,35 @@ export default function IncidentCard({ incident }) {
           )}
           {incident.has_snapshot && snapshotError && (
             <p className="text-xs text-amber-300 mt-2">Evidence snapshot could not be loaded.</p>
+          )}
+
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={loadClip}
+              disabled={clipState === 'loading'}
+              className="rounded-md border border-slate-600 px-3 py-1.5 text-xs hover:bg-slate-800 disabled:opacity-50"
+            >
+              {clipState === 'loading' ? 'Loading evidence…' : 'View evidence clip'}
+            </button>
+            {clipState === 'ready' && (
+              <button
+                onClick={downloadClip}
+                className="rounded-md bg-cyan-600 text-slate-950 font-semibold px-3 py-1.5 text-xs hover:bg-cyan-500"
+              >
+                Download evidence
+              </button>
+            )}
+          </div>
+          {clipState === 'missing' && (
+            <p className="text-xs text-amber-300 mt-1">
+              Evidence clip is not ready yet — it finishes ~10 s after the alert. Try again shortly.
+            </p>
+          )}
+          {clipState === 'error' && (
+            <p className="text-xs text-red-300 mt-1">Could not load the evidence clip.</p>
+          )}
+          {clipUrl && (
+            <video controls src={clipUrl} className="w-full rounded border border-slate-700 mt-2" />
           )}
         </div>
       )}

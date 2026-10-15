@@ -9,9 +9,15 @@ from app.detection.movement_analyzer import AnalysisResult
 
 
 def draw_overlay(annotated: np.ndarray, result: AnalysisResult) -> np.ndarray:
+    """Full forensic annotation: pair lines + status panel. Used for EVIDENCE
+    frames (clip + evidence snapshots). The live view uses draw_status_panel
+    only, so operators see a clean picture."""
     for p1, p2 in result.pair_lines:
         cv2.line(annotated, p1, p2, (0, 255, 255), 2)
+    return draw_status_panel(annotated, result)
 
+
+def draw_status_panel(annotated: np.ndarray, result: AnalysisResult) -> np.ndarray:
     status_color = (0, 0, 255) if result.suspicious else (0, 255, 0)
 
     panel_height = 145

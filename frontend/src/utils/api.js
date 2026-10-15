@@ -48,6 +48,14 @@ export const api = {
     if (!res.ok) throw new Error(`Snapshot request failed (${res.status})`)
     return res.blob()
   },
+  getIncidentClip: async (id, signal) => {
+    const res = await fetch(`${API_BASE}/api/incidents/${encodeURIComponent(id)}/clip`, {
+      headers: { 'X-API-Key': API_KEY },
+      signal,
+    })
+    if (!res.ok) { const err = new Error(`Clip request failed (${res.status})`); err.status = res.status; throw err }
+    return res.blob()
+  },
 
 }
 

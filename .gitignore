@@ -8,3 +8,9 @@ dist/
 .venv/
 backend/venv/
 frontend/node_modules/
+.venv/
+backend/venv/
+.DS_Store
+**/.DS_Store
+frontend/node_modules/
+.env

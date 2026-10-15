@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy import func, select
@@ -101,3 +103,25 @@ async def get_incident_snapshot(incident_id: str, session: AsyncSession = Depend
     if not row or not row.snapshot_path:
         raise HTTPException(status_code=404, detail="Snapshot not found")
     return FileResponse(row.snapshot_path, media_type="image/jpeg")
+
+
+@router.get("/{incident_id}/clip")
+async def get_incident_clip(
+    incident_id: str,
+    download: bool = False,
+    session: AsyncSession = Depends(get_session),
+):
+    """Serve the annotated evidence clip (pre+post event) written by
+    EvidenceCollector. 404 until the post-event window (~10 s) completes."""
+    row = await session.scalar(select(Incident).where(Incident.incident_id == incident_id))
+    if not row:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    settings = get_settings()
+    clip_path = os.path.join(settings.snapshot_dir, incident_id, "clip.mp4")
+    if not os.path.isfile(clip_path):
+        raise HTTPException(status_code=404, detail="Evidence clip not ready yet")
+    return FileResponse(
+        clip_path,
+        media_type="video/mp4",
+        filename=f"{incident_id}_evidence.mp4" if download else None,
+    )

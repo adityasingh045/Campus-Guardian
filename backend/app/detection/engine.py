@@ -18,7 +18,7 @@ import time
 
 import cv2
 
-from app.detection.annotator import draw_overlay
+from app.detection.annotator import draw_overlay, draw_status_panel
 from app.detection.camera import CameraReader
 from app.detection.config import DetectionConfig
 from app.detection.evidence import EvidenceCollector, EvidenceRingBuffer
@@ -170,7 +170,8 @@ class CameraEngine:
 
         annotated, detections = self._tracker.track(frame)
         result = self._analyzer.update(detections)
-        draw_overlay(annotated, result)
+        draw_overlay(annotated, result)            # evidence copy: skeletons + boxes + pair lines + panel
+        display = draw_status_panel(frame, result)  # live/snapshot copy: clean picture + status panel only
 
         self.last_frame_time = time.time()
         self.last_person_count = result.people_count
@@ -183,7 +184,7 @@ class CameraEngine:
 
         if incident is not None:
             if just_alerted:
-                snapshot_path = self._save_snapshot(annotated, incident)
+                snapshot_path = self._save_snapshot(display, incident)
                 self._evidence_collector.start(
                     incident.incident_id,
                     self._evidence_ring.snapshot(),
@@ -214,7 +215,7 @@ class CameraEngine:
             if pending_id != started_now:
                 self._evidence_collector.add_post_frame(pending_id, annotated)
 
-        self._maybe_broadcast(annotated, result, incident)
+        self._maybe_broadcast(display, result, incident)
 
     def _maybe_broadcast(self, annotated, result, incident) -> None:
         if not self.has_clients_fn():

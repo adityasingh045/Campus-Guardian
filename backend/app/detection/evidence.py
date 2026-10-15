@@ -101,10 +101,20 @@ class EvidenceCollector:
             h, w = first.shape[:2]
             duration = max(all_frames[-1][0] - all_frames[0][0], 1.0)
             fps = max(1.0, len(all_frames) / duration)
-            writer = cv2.VideoWriter(os.path.join(out_dir, "clip.mp4"), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
-            for _, data in all_frames:
-                writer.write(_decode(data))
-            writer.release()
+            clip_path = os.path.join(out_dir, "clip.mp4")
+            writer = None
+            # Prefer H.264 ('avc1') so the clip plays inline in browser <video> tags;
+            # 'mp4v' (MPEG-4 Part 2) is a fallback that downloads fine but won't play in Chrome.
+            for fourcc in ("avc1", "mp4v"):
+                writer = cv2.VideoWriter(clip_path, cv2.VideoWriter_fourcc(*fourcc), fps, (w, h))
+                if writer.isOpened():
+                    break
+                writer.release()
+                writer = None
+            if writer is not None:
+                for _, data in all_frames:
+                    writer.write(_decode(data))
+                writer.release()
         except Exception:
             logger.exception("Could not write evidence clip for %s (snapshots were saved).", incident_id)
 

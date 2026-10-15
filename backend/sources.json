@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "source_id": "CAMO-ANDROID-1",
+    "source_type": "webcam",
+    "location": "Hostel Block A",
+    "uri": "0",
+    "enabled": true
+  },
+  {
+    "source_id": "VIDEO-ARCHIVE-1",
+    "source_type": "uploaded_video",
+    "location": "Library (recorded)",
+    "uri": "/Users/adityasingh/Movies/1.mp4",
+    "enabled": true
+  }
+]
