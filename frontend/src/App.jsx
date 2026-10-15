@@ -1,8 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Navbar from './components/Navbar.jsx'
 import CameraGrid from './components/CameraGrid.jsx'
 import SystemStatusBar from './components/SystemStatusBar.jsx'
 import IncidentsFeed from './components/IncidentsFeed.jsx'
+import IncidentHistory from './components/IncidentHistory.jsx'
+import AlertDetailsPanel from './components/AlertDetailsPanel.jsx'
 import { useWebSocket } from './hooks/useWebSocket.js'
 import { useSources } from './hooks/useSources.js'
 import { useIncidents } from './hooks/useIncidents.js'
@@ -15,6 +17,8 @@ export default function App() {
   const { framesBySource, latestIncidentEvent, connected } = useWebSocket()
   const { sources, refresh: refreshSources } = useSources()
   const { incidents, activeCount, loading, error, loadMore, hasMore } = useIncidents(latestIncidentEvent)
+  const [detailsIncident, setDetailsIncident] = useState(null)
+  const [historySourceId, setHistorySourceId] = useState(null)
 
   async function removeSource(sourceId) {
     if (!window.confirm(`Remove camera source ${sourceId}?`)) return
@@ -45,11 +49,25 @@ export default function App() {
         <div className="min-h-0 overflow-y-auto space-y-3">
           <PhoneCameraManager onAdded={refreshSources} />
           <CameraGrid sources={sources} framesBySource={framesBySource} onRemove={removeSource} />
+          <IncidentHistory
+            sources={sources}
+            incidents={incidents}
+            selectedSourceId={historySourceId}
+            onSelectSource={setHistorySourceId}
+            onViewDetails={setDetailsIncident}
+          />
         </div>
         <div className="min-h-0">
           <IncidentsFeed incidents={incidents} loading={loading} error={error} loadMore={loadMore} hasMore={hasMore} />
         </div>
       </main>
+      {detailsIncident && (
+        <AlertDetailsPanel
+          incident={detailsIncident}
+          onClose={() => setDetailsIncident(null)}
+          onViewHistory={(sourceId) => setHistorySourceId(sourceId)}
+        />
+      )}
     </div>
   )
 }
