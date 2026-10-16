@@ -1,0 +1,23 @@
+[
+  {
+    "source_id": "CAM-LIVE",
+    "source_type": "webcam",
+    "uri": "0",
+    "location": "Main Gate (Live)",
+    "enabled": true
+  },
+  {
+    "source_id": "CAM-FRIENDLY",
+    "source_type": "uploaded_video",
+    "uri": "/ABSOLUTE/PATH/TO/friendly_hugs_handshakes.mp4",
+    "location": "Canteen Entrance",
+    "enabled": true
+  },
+  {
+    "source_id": "CAM-CROWD",
+    "source_type": "uploaded_video",
+    "uri": "/ABSOLUTE/PATH/TO/crowd_roaming.mp4",
+    "location": "Quadrangle",
+    "enabled": true
+  }
+]

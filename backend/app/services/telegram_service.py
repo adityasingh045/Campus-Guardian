@@ -94,13 +94,49 @@ class TelegramService:
         logger.error("Telegram delivery failed for %s after retries (incident already persisted).", incident.incident_id)
         return TelegramDeliveryResult(sent=False, attempts=self.max_retries + 1, error=last_error)
 
-    async def _send(self, caption: str, snapshot_path: str | None) -> None:
+    async def send_additional_angle(self, incident, snapshot_path: str | None, group_id: str) -> None:
+        """A second camera in the same zone confirmed an already-alerted
+        incident: send one compact follow-up (photo if available) instead of
+        a full duplicate alert. Failures are logged, never raised."""
+        if not self.configured:
+            return
+        caption = (
+            f"\U0001F4F8 Additional angle of incident {group_id}\n"
+            f"Camera: {incident.source_id}\n"
+            f"Location: {incident.location}\n"
+            f"(Same event, second camera \u2014 no separate incident.)"
+        )
+        try:
+            await self._send(caption, snapshot_path)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Telegram additional-angle send failed for %s: %s", incident.incident_id, e)
+
+    async def send_escalation(self, incident_id: str, location: str, started_at_text: str,
+                              minutes: float, chat_id: str | None = None) -> bool:
+        """Unacknowledged-alert follow-up, optionally to a different chat."""
+        if not self.bot_token or not (chat_id or self.chat_id):
+            return False
+        text = (
+            "\u23F0 ESCALATION \u2014 ALERT NOT REVIEWED\n\n"
+            f"Incident {incident_id} at {location} (detected {started_at_text}) "
+            f"has not been reviewed for {int(minutes)} minute(s).\n\n"
+            f"Open Dashboard:\n{self.dashboard_base_url}"
+        )
+        try:
+            await self._send(text, None, chat_id_override=chat_id)
+            return True
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Telegram escalation send failed for %s: %s", incident_id, e)
+            return False
+
+    async def _send(self, caption: str, snapshot_path: str | None, chat_id_override: str | None = None) -> None:
+        chat_id = chat_id_override or self.chat_id
         async with httpx.AsyncClient(timeout=10.0) as client:
             if snapshot_path:
                 url = f"https://api.telegram.org/bot{self.bot_token}/sendPhoto"
                 with open(snapshot_path, "rb") as f:
-                    resp = await client.post(url, data={"chat_id": self.chat_id, "caption": caption}, files={"photo": f})
+                    resp = await client.post(url, data={"chat_id": chat_id, "caption": caption}, files={"photo": f})
             else:
                 url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
-                resp = await client.post(url, data={"chat_id": self.chat_id, "text": caption})
+                resp = await client.post(url, data={"chat_id": chat_id, "text": caption})
             resp.raise_for_status()

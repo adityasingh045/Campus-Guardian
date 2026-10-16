@@ -31,6 +31,10 @@ class SourceConfig:
     location: str
     uri: str  # "0" for default webcam, a file path, or an rtsp:// url
     enabled: bool = True
+    # Cameras covering the SAME physical area share a zone (e.g. "Corridor A").
+    # Incidents from different cameras in one zone within the correlation
+    # window are merged into one incident group -> one alert, many angles.
+    zone: str = ""
 
     @classmethod
     def from_dict(cls, d: dict) -> "SourceConfig":
@@ -40,6 +44,7 @@ class SourceConfig:
             location=d["location"],
             uri=d["uri"],
             enabled=d.get("enabled", True),
+            zone=d.get("zone", "") or "",
         )
 
     def to_dict(self) -> dict:
@@ -49,6 +54,7 @@ class SourceConfig:
             "location": self.location,
             "uri": self.uri,
             "enabled": self.enabled,
+            "zone": self.zone,
         }
 
 
@@ -71,12 +77,14 @@ class SourceRuntimeStatus:
     activity_status: str = "NORMAL"
     active_incident_id: str | None = None
     last_frame_age_seconds: float | None = None
+    zone: str = ""
 
     def to_dict(self) -> dict:
         return {
             "source_id": self.source_id,
             "type": self.source_type,
             "location": self.location,
+            "zone": self.zone,
             "status": self.status.value,
             "fps": round(self.fps, 1),
             "resolution": list(self.resolution) if self.resolution else None,

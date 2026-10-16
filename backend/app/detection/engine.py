@@ -18,7 +18,7 @@ import time
 
 import cv2
 
-from app.detection.annotator import draw_overlay, draw_status_panel
+from app.detection.annotator import blur_person_heads, draw_overlay, draw_status_panel
 from app.detection.camera import CameraReader
 from app.detection.config import DetectionConfig
 from app.detection.evidence import EvidenceCollector, EvidenceRingBuffer
@@ -169,6 +169,14 @@ class CameraEngine:
             return
 
         annotated, detections = self._tracker.track(frame)
+
+        # Privacy mode: blur heads on every stored/broadcast copy. Applied to
+        # the raw pixels BEFORE overlays, so analysis is unaffected (it only
+        # uses box geometry) but no identifiable face leaves this process.
+        if self.config.privacy_blur_faces and detections:
+            blur_person_heads(frame, detections)
+            blur_person_heads(annotated, detections)
+
         result = self._analyzer.update(detections)
         draw_overlay(annotated, result)            # evidence copy: skeletons + boxes + pair lines + panel
         display = draw_status_panel(frame, result)  # live/snapshot copy: clean picture + status panel only

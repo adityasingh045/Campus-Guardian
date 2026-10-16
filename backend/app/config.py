@@ -37,6 +37,23 @@ class Settings(BaseSettings):
     evidence_pre_seconds: float = 10.0
     evidence_post_seconds: float = 10.0
 
+    # --- Privacy ---
+    # Blur the head region of every detected person in stored evidence
+    # (snapshots + clips). Off by default; enable for privacy-sensitive sites.
+    privacy_blur_faces: bool = False
+
+    # --- Multi-camera incident correlation ---
+    # Two cameras in the same zone firing within this window = one incident
+    # group (one Telegram alert, extra cameras attached as additional angles).
+    incident_correlation_seconds: float = 45.0
+
+    # --- Escalation ---
+    # If an alert is not marked reviewed within this many minutes, send a
+    # follow-up Telegram message (to the escalation chat if set, else the
+    # main chat). 0 disables escalation.
+    escalation_minutes: float = 0.0
+    telegram_escalation_chat_id: str | None = None
+
     # --- Multi-source ---
     sources_config_json: str | None = None
     sources_config_file: str = str(BASE_DIR / "sources.json")

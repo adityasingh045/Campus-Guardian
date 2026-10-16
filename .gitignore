@@ -14,3 +14,11 @@ backend/venv/
 **/.DS_Store
 frontend/node_modules/
 .env
+
+# runtime 
+files
+backend/data/
+backend/snapshots/
+backend/backend_log.txt
+.DS_Store
+**/.DS_Store
