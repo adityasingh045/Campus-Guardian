@@ -1,0 +1,22 @@
+{
+  "incident_id": "INC-20261016-10DCA6",
+  "source_id": "VIDEO-ARCHIVE-1",
+  "location": "Library (recorded)",
+  "started_at": 1792149393.812415,
+  "people_involved": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "max_movement_px": 19.849433241279208,
+  "closest_distance_px": 261.0766171069328,
+  "thresholds": {
+    "distance_px": 300.0,
+    "movement_px": 15.0,
+    "frames_required": 2
+  },
+  "frame_count": 132,
+  "pre_event_frames": 12,
+  "post_event_frames": 120
+}
