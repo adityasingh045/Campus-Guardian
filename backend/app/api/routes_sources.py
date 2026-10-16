@@ -19,6 +19,7 @@ class AddSourceRequest(BaseModel):
     location: str
     uri: str
     enabled: bool = True
+    zone: str = ""  # cameras sharing a zone are correlated into one incident group
 
 
 @router.get("")
@@ -51,6 +52,7 @@ async def add_source(body: AddSourceRequest, request: Request):
         location=body.location,
         uri=body.uri,
         enabled=body.enabled,
+        zone=body.zone,
     )
     try:
         source_manager.add_source(cfg)
@@ -72,6 +74,7 @@ async def remove_source(source_id: str, request: Request):
 class PhoneCameraRegistration(BaseModel):
     source_id: str = Field(min_length=3, max_length=48, pattern=r"^[A-Za-z0-9_-]+$")
     location: str = Field(min_length=2, max_length=120)
+    zone: str = Field(default="", max_length=64)
 
 
 @router.post("/phone")
@@ -84,6 +87,7 @@ async def register_phone_camera(body: PhoneCameraRegistration, request: Request)
         location=body.location,
         uri=f"phone://{body.source_id}",
         enabled=True,
+        zone=body.zone,
     )
     try:
         source_manager.add_source(cfg)

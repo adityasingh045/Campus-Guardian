@@ -18,6 +18,7 @@ from app.db.session import async_session_factory
 from app.detection.engine import IncidentAlertEvent
 from app.services.alert_service import IncidentConsumer
 from app.services.cleanup_service import CleanupService
+from app.services.escalation_service import EscalationService
 from app.services.frame_broadcaster import FrameBroadcaster
 from app.services.telegram_service import TelegramService
 from app.services.ws_manager import WebSocketManager
@@ -67,13 +68,25 @@ async def lifespan(app: FastAPI):
         except Exception:
             logger.exception("Failed to add source %s; other sources are unaffected.", cfg.source_id)
 
-    incident_consumer = IncidentConsumer(alert_q, ws_manager, telegram)
+    incident_consumer = IncidentConsumer(
+        alert_q,
+        ws_manager,
+        telegram,
+        zone_lookup=source_manager.zone_of,
+        correlation_seconds=settings.incident_correlation_seconds,
+    )
     frame_broadcaster = FrameBroadcaster(lambda: source_manager.frame_queues, ws_manager)
     cleanup_service = CleanupService(settings.snapshot_retention_days, settings.cleanup_interval_seconds)
+    escalation_service = EscalationService(
+        telegram,
+        settings.escalation_minutes,
+        settings.telegram_escalation_chat_id,
+    )
 
     incident_task = asyncio.create_task(incident_consumer.run())
     frame_task = asyncio.create_task(frame_broadcaster.run())
     cleanup_task = asyncio.create_task(cleanup_service.run())
+    escalation_task = asyncio.create_task(escalation_service.run())
 
     logger.info("Campus Guardian backend started with %d source(s).", len(source_configs))
     if settings.allow_no_auth and not settings.api_key:
@@ -87,9 +100,10 @@ async def lifespan(app: FastAPI):
         incident_consumer.stop()
         frame_broadcaster.stop()
         cleanup_service.stop()
-        for t in (incident_task, frame_task, cleanup_task):
+        escalation_service.stop()
+        for t in (incident_task, frame_task, cleanup_task, escalation_task):
             t.cancel()
-        await asyncio.gather(incident_task, frame_task, cleanup_task, return_exceptions=True)
+        await asyncio.gather(incident_task, frame_task, cleanup_task, escalation_task, return_exceptions=True)
         logger.info("Shutdown complete.")
 
 

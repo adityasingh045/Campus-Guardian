@@ -94,6 +94,7 @@ class SourceManager:
             source_id=source_id,
             source_type=cfg.source_type.value,
             location=cfg.location,
+            zone=cfg.zone,
             status=status,
             using_synthetic_feed=engine.using_synthetic_feed,
             person_count=engine.last_person_count,
@@ -109,6 +110,11 @@ class SourceManager:
 
     def list_configs(self) -> list[SourceConfig]:
         return list(self._configs.values())
+
+    def zone_of(self, source_id: str) -> str:
+        """Zone for incident correlation; '' means uncorrelated."""
+        cfg = self._configs.get(source_id)
+        return (cfg.zone or "").strip() if cfg else ""
 
     def stop_all(self, timeout: float = 5.0) -> None:
         for source_id, engine in self._engines.items():

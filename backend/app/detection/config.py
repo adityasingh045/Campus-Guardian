@@ -22,6 +22,7 @@ class DetectionConfig:
     evidence_pre_seconds: float
     evidence_post_seconds: float
     test_video_fallback: bool
+    privacy_blur_faces: bool = False
 
     @classmethod
     def from_settings(cls, s: Settings, camera_source: str | None = None) -> "DetectionConfig":
@@ -41,4 +42,5 @@ class DetectionConfig:
             evidence_pre_seconds=s.evidence_pre_seconds,
             evidence_post_seconds=s.evidence_post_seconds,
             test_video_fallback=s.test_video_fallback,
+            privacy_blur_faces=s.privacy_blur_faces,
         )

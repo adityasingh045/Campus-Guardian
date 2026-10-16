@@ -26,6 +26,15 @@ class Incident(Base):
     snapshot_path: Mapped[str | None] = mapped_column(String(256), nullable=True)
     telegram_status: Mapped[str] = mapped_column(String(16), default="not_sent")  # not_sent | sent | failed
     telegram_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    # --- multi-camera correlation ---
+    # zone copied from the source config at detection time; incidents from
+    # different cameras in one zone within the correlation window share a
+    # group_id (the group leader's incident_id). Leader: group_id == incident_id.
+    zone: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    group_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    # --- review / escalation ---
+    reviewed_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    escalated_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class IncidentEvent(Base):
